@@ -28,6 +28,8 @@ public class CarController : MonoBehaviour {
     private ICarInputProvider input;
     private float forwardSpeed;
     public float SpeedRatio => Mathf.Clamp01(Mathf.Abs(forwardSpeed) / maxSpeed);
+    public float MaxSpeed => maxSpeed;
+    public float LateralGrip => grip * slideAllowance;
     private bool IsGrounded { get; set; }
 
     private void Awake() {
