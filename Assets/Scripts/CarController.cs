@@ -20,6 +20,9 @@ public class CarController : MonoBehaviour {
     [SerializeField] private float spinThreshold = 10f;
     [SerializeField] private float spinRate = 4f;
 
+    [Header("Impact")]
+    [SerializeField] private float impactDecay = 4f;
+
     [Header("Ground")]
     [SerializeField] private LayerMask groundMask = 1 << 10;
     [SerializeField] private float groundCheckDistance = 0.8f;
@@ -27,6 +30,8 @@ public class CarController : MonoBehaviour {
     private Rigidbody rb;
     private ICarInputProvider input;
     private float forwardSpeed;
+    private Vector3 appliedVelocity;
+    private Vector3 impact;
     public float SpeedRatio => Mathf.Clamp01(Mathf.Abs(forwardSpeed) / maxSpeed);
     public float MaxSpeed => maxSpeed;
     public float LateralGrip => grip * slideAllowance;
@@ -39,12 +44,18 @@ public class CarController : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        IsGrounded = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, groundCheckDistance, groundMask);
-        if (!IsGrounded) return;
-
-        float deltaTime = Time.fixedDeltaTime;
         Vector3 velocity = rb.linearVelocity;
         Vector3 planarVelocity = new Vector3(velocity.x, 0f, velocity.z);
+
+        IsGrounded = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, groundCheckDistance, groundMask);
+        if (!IsGrounded) {
+            appliedVelocity = planarVelocity;
+            return;
+        }
+
+        float deltaTime = Time.fixedDeltaTime;
+        impact = Vector3.MoveTowards(impact + planarVelocity - appliedVelocity, Vector3.zero, impactDecay * deltaTime);
+        planarVelocity -= impact;
 
         Vector3 heading = Steer(planarVelocity, deltaTime);
         float alongHeading = Vector3.Dot(planarVelocity, heading);
@@ -52,7 +63,8 @@ public class CarController : MonoBehaviour {
 
         forwardSpeed = Drive(alongHeading, deltaTime);
 
-        Vector3 result = heading * forwardSpeed + slide;
+        Vector3 result = heading * forwardSpeed + slide + impact;
+        appliedVelocity = result;
         rb.linearVelocity = new Vector3(result.x, velocity.y, result.z);
     }
 

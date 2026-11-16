@@ -4,36 +4,60 @@ using UnityEngine.Splines;
 [RequireComponent(typeof(SplineContainer))]
 public class SplineTrackPath : MonoBehaviour, ITrackPath {
 
-    [SerializeField, Min(0.1f)] private float sampleSpacing = 1f;
+    private const int Oversampling = 8;
 
-    private Vector3[] points;
+    [SerializeField, Min(0.25f)] private float sampleSpacing = 1f;
+    [SerializeField, Min(1f)] private float searchRange = 8f;
 
-    public float Length { get; private set; }
+    private TrackSamples samples;
 
-    private float Step => Length / points.Length;
+    public float Length => samples.Length;
 
     private void Awake() {
-        SplineContainer container = GetComponent<SplineContainer>();
-        Length = container.Spline.GetLength();
-        points = new Vector3[Mathf.CeilToInt(Length / sampleSpacing)];
-
-        for (int i = 0; i < points.Length; i++) {
-            float t = container.Spline.ConvertIndexUnit(i * Step, PathIndexUnit.Distance, PathIndexUnit.Normalized);
-            points[i] = container.EvaluatePosition(t);
-        }
+        Vector3[] fine = SampleByCurveTime(GetComponent<SplineContainer>());
+        samples = ResampleByDistance(fine, DistancesAlong(fine));
     }
 
-    public float DistanceOf(Vector3 position) {
-        int nearest = 0;
-        for (int i = 1; i < points.Length; i++) {
-            if ((points[i] - position).sqrMagnitude < (points[nearest] - position).sqrMagnitude) nearest = i;
+    public float DistanceOf(Vector3 position) => samples.Nearest(position);
+
+    public float DistanceNear(Vector3 position, float near) => samples.NearestAround(position, near, searchRange);
+
+    public Vector3 PositionAt(float distance) => samples.PositionAt(distance);
+
+    public Vector3 DirectionAt(float distance) => samples.DirectionAt(distance);
+
+    public Vector3 PointBeside(float distance, float offset) => samples.PointBeside(distance, offset);
+
+    private Vector3[] SampleByCurveTime(SplineContainer container) {
+        int steps = Mathf.Max(64, Mathf.RoundToInt(container.Spline.GetLength() / sampleSpacing) * Oversampling);
+        Vector3[] fine = new Vector3[steps + 1];
+
+        for (int i = 0; i <= steps; i++) {
+            fine[i] = container.EvaluatePosition((float)i / steps);
         }
-        return nearest * Step;
+        return fine;
     }
 
-    public Vector3 PositionAt(float distance) {
-        float index = Mathf.Repeat(distance, Length) / Step;
-        int i = (int)index;
-        return Vector3.Lerp(points[i % points.Length], points[(i + 1) % points.Length], index - i);
+    private static float[] DistancesAlong(Vector3[] fine) {
+        float[] distances = new float[fine.Length];
+
+        for (int i = 1; i < fine.Length; i++) {
+            distances[i] = distances[i - 1] + Vector3.Distance(fine[i - 1], fine[i]);
+        }
+        return distances;
+    }
+
+    private TrackSamples ResampleByDistance(Vector3[] fine, float[] distances) {
+        int count = Mathf.Max(3, Mathf.RoundToInt(distances[distances.Length - 1] / sampleSpacing));
+        float spacing = distances[distances.Length - 1] / count;
+        Vector3[] even = new Vector3[count];
+        int cursor = 0;
+
+        for (int i = 0; i < count; i++) {
+            float target = i * spacing;
+            while (cursor < fine.Length - 2 && distances[cursor + 1] < target) cursor++;
+            even[i] = Vector3.Lerp(fine[cursor], fine[cursor + 1], Mathf.InverseLerp(distances[cursor], distances[cursor + 1], target));
+        }
+        return new TrackSamples(even, spacing);
     }
 }

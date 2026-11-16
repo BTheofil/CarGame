@@ -7,6 +7,8 @@ public class BotInputProvider : MonoBehaviour, ICarInputProvider {
     [SerializeField] private SplineTrackPath track;
     [SerializeField] private BotSettings settings = new BotSettings();
     [SerializeField] private int lapsToDrive = 1;
+    [SerializeField, Range(0.5f, 1f)] private float skill = 1f;
+    [SerializeField] private float laneOffset;
 
     public float Steer { get; private set; }
     public float Throttle { get; private set; }
@@ -17,18 +19,26 @@ public class BotInputProvider : MonoBehaviour, ICarInputProvider {
     private BotDriver driver;
     private LapTracker laps;
     private bool finished;
+    private float distance;
+
+    public void Configure(SplineTrackPath track, float skill, float laneOffset) {
+        this.track = track;
+        this.skill = skill;
+        this.laneOffset = laneOffset;
+    }
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
         CarController car = GetComponent<CarController>();
 
         path = track;
-        driver = new BotDriver(path, settings, car.MaxSpeed, car.LateralGrip);
-        laps = new LapTracker(path.Length, path.DistanceOf(transform.position));
+        driver = new BotDriver(path, settings, car.MaxSpeed * skill, car.LateralGrip * skill, laneOffset);
+        distance = path.DistanceOf(transform.position);
+        laps = new LapTracker(path.Length, distance);
     }
 
     private void FixedUpdate() {
-        float distance = path.DistanceOf(transform.position);
+        distance = path.DistanceNear(transform.position, distance);
         laps.Advance(distance);
 
         if (laps.Laps >= lapsToDrive) {

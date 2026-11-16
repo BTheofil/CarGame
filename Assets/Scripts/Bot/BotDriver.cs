@@ -29,12 +29,14 @@ public class BotDriver {
     private readonly BotSettings settings;
     private readonly float maxSpeed;
     private readonly float lateralGrip;
+    private readonly float laneOffset;
 
-    public BotDriver(ITrackPath path, BotSettings settings, float maxSpeed, float lateralGrip) {
+    public BotDriver(ITrackPath path, BotSettings settings, float maxSpeed, float lateralGrip, float laneOffset) {
         this.path = path;
         this.settings = settings;
         this.maxSpeed = maxSpeed;
         this.lateralGrip = lateralGrip;
+        this.laneOffset = laneOffset;
     }
 
     public DriveCommand Drive(Vector3 position, Vector3 forward, float speed, float distance) {
@@ -46,8 +48,8 @@ public class BotDriver {
     }
 
     private float SteerTowards(Vector3 position, Vector3 forward, float distance) {
-        Vector3 toTarget = Flat(path.PositionAt(distance + settings.lookahead) - position);
-        float angle = Vector3.SignedAngle(Flat(forward), toTarget, Vector3.up);
+        Vector3 target = path.PointBeside(distance + settings.lookahead, laneOffset);
+        float angle = Vector3.SignedAngle(Flat(forward), Flat(target - position), Vector3.up);
         return Mathf.Clamp(angle / settings.steerSensitivity, -1f, 1f);
     }
 
