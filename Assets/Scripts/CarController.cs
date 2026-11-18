@@ -35,6 +35,7 @@ public class CarController : MonoBehaviour {
     public float SpeedRatio => Mathf.Clamp01(Mathf.Abs(forwardSpeed) / maxSpeed);
     public float MaxSpeed => maxSpeed;
     public float LateralGrip => grip * slideAllowance;
+    public float ImpactSpeed { get; private set; }
     private bool IsGrounded { get; set; }
 
     private void Awake() {
@@ -47,6 +48,9 @@ public class CarController : MonoBehaviour {
         Vector3 velocity = rb.linearVelocity;
         Vector3 planarVelocity = new Vector3(velocity.x, 0f, velocity.z);
 
+        Vector3 injected = planarVelocity - appliedVelocity;
+        ImpactSpeed = injected.magnitude;
+
         IsGrounded = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, groundCheckDistance, groundMask);
         if (!IsGrounded) {
             appliedVelocity = planarVelocity;
@@ -54,7 +58,7 @@ public class CarController : MonoBehaviour {
         }
 
         float deltaTime = Time.fixedDeltaTime;
-        impact = Vector3.MoveTowards(impact + planarVelocity - appliedVelocity, Vector3.zero, impactDecay * deltaTime);
+        impact = Vector3.MoveTowards(impact + injected, Vector3.zero, impactDecay * deltaTime);
         planarVelocity -= impact;
 
         Vector3 heading = Steer(planarVelocity, deltaTime);

@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 4087438417305408184}
   - component: {fileID: 9139076671511286721}
   - component: {fileID: 2831597635581791887}
+  - component: {fileID: 788528790961793270}
   m_Layer: 0
   m_Name: Car
   m_TagString: Player
@@ -119,7 +120,7 @@ Transform:
   m_GameObject: {fileID: 8346825217570849023}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -58.5, y: 0.41, z: -40.8}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -210,7 +211,23 @@ MonoBehaviour:
   slideAllowance: 1.8
   spinThreshold: 10
   spinRate: 4
+  impactDecay: 4
   groundMask:
     serializedVersion: 2
     m_Bits: 1024
   groundCheckDistance: 0.8
+--- !u!114 &788528790961793270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8346825217570849023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ef31794bbd92424db14b271387d5c13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CarDamage
+  maxHealth: 100
+  strength: 1
+  impactThreshold: 0.3
