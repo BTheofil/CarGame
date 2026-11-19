@@ -27,7 +27,7 @@ public class CarDamage : MonoBehaviour {
         float damage = (car.ImpactSpeed - impactThreshold) / strength;
         if (damage <= 0f) return;
         Health = Mathf.Max(0f, Health - damage);
-        Debug.Log(Health);
+       
         if (IsWrecked) {
             Debug.Log($"{name} wrecked");
             Destroyed?.Invoke();
