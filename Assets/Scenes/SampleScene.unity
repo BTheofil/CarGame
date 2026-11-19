@@ -218,10 +218,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c263bfe9c8b62046b7ac3afd86ecf83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartLights
-  lamps: []
-  player: {fileID: 0}
+  lamps:
+  - {fileID: 1030137047}
+  - {fileID: 654328586}
+  - {fileID: 1195057202}
+  - {fileID: 1124070486}
+  - {fileID: 847580964}
+  player: {fileID: 1703710602}
   lampInterval: 1
-  holdRange: {x: 0.1, y: 3}
+  holdRange: {x: 0.5, y: 3}
   litColor: {r: 1, g: 0, b: 0, a: 1}
   darkColor: {r: 0.15, g: 0.15, b: 0.15, a: 1}
 --- !u!114 &8829564
@@ -2495,6 +2500,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1703710602 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9139076671511286721, guid: 231799f8d013de14f9583c716ea237f4, type: 3}
+  m_PrefabInstance: {fileID: 5616049577677252802}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d732148423283af429557b9da2045d7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputProvider
 --- !u!1 &2012421978
 GameObject:
   m_ObjectHideFlags: 0
